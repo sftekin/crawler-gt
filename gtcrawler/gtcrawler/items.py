@@ -12,4 +12,4 @@ class GtcrawlerItem(scrapy.Item):
     title = scrapy.Field()
     contacts = scrapy.Field()
     research_area = scrapy.Field()
-    webpage_body = scrapy.Field()
+    content = scrapy.Field()
