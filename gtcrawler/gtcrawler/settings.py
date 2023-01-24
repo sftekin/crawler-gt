@@ -12,6 +12,7 @@ BOT_NAME = 'gtcrawler'
 SPIDER_MODULES = ['gtcrawler.spiders']
 NEWSPIDER_MODULE = 'gtcrawler.spiders'
 
+# LOG_LEVEL = 'INFO'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'gtcrawler (+http://www.yourdomain.com)'
