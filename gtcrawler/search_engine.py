@@ -1,9 +1,11 @@
 import json
+import time
 from elasticsearch import Elasticsearch, exceptions
 from cleantext import clean
 
 
 def main():
+    K = 800
     crawled_file = "crawled_data.json"
     with open(crawled_file, "r") as f:
         crawled_data = json.load(f)
@@ -30,8 +32,9 @@ def main():
         else: # Other exception - raise it
             raise ex
 
-    # es.indices.create(index="faculty", mappings=mappings)
-
+    print("Adding data to the index")
+    start_time = time.time()
+    success_idx = 0
     for i, sample in enumerate(crawled_data):
         if sample["name"] is None:
             continue
@@ -46,12 +49,18 @@ def main():
             "bio_url": get_contact(sample["contacts"], mode="webpage"),
             "bio": content,
         }
-
         es.index(index="faculty", id=i, document=doc)
+        success_idx += 1
+
+        if success_idx > K:
+            break
+    creation_time = time.time() - start_time
 
     es.indices.refresh(index="faculty")
     print(es.cat.count(index="faculty", format="json"))
 
+    print("Faculty has Machine Learning area but not a Ph.D. Student")
+    start_time = time.time()
     resp = es.search(
         index="faculty",
         body={
@@ -67,10 +76,13 @@ def main():
             },
         }
     )
-
-    print("Faculty has Machine Learning area but not a Ph.D. Student")
+    resp_time = time.time() - start_time
     for hit in resp.body["hits"]["hits"]:
         print(hit["_source"]["name"])
+
+    print(f"Creation took {creation_time:.4f}, Response took {resp_time:.4f}")
+
+    es.indices.delete(index='faculty')
 
 
 def get_contact(in_list, mode="email"):
@@ -86,7 +98,6 @@ def get_contact(in_list, mode="email"):
         else:
             pass
     return ret_val
-
 
 
 if __name__ == '__main__':
